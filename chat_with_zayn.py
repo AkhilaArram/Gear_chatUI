@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional, List
 
 import google.generativeai as genai
 from dotenv import load_dotenv
+from pypdf import PdfReader
 
 # -------------------- SETUP --------------------
 load_dotenv(override=True)
@@ -167,10 +168,13 @@ def _is_malicious_query(query: str) -> bool:
     return any(kw in q for kw in _BANNED_KEYWORDS)
 
 
-def generate_response(user_id: str, session_id: str, query: str, model_name: str = "gemini-2.5-flash") -> Dict[str, Any]:
+def generate_response(user_id: str, session_id: str, query: str, file_path: Optional[str] = None, model_name: str = "gemini-2.5-flash") -> Dict[str, Any]:
     """Generate Gemini model response, using chat history as context."""
     timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    logging.info(f"User={user_id}, Session={session_id}, Query={query}")
+    
+    # Consolidated log message for the request
+    log_message = f"User={user_id}, Session={session_id}, Query='{query}', File={file_path or 'None'}"
+    logging.info(log_message)
 
     # Check for unsafe content
     if _is_malicious_query(query):
@@ -180,6 +184,20 @@ def generate_response(user_id: str, session_id: str, query: str, model_name: str
             "message": "I can’t assist with unauthorized or harmful activities.",
         }
 
+    # Extract content from PDF if provided
+    file_context = ""
+    if file_path and os.path.exists(file_path):
+        if file_path.lower().endswith(".pdf"):
+            try:
+                reader = PdfReader(file_path)
+                pdf_text = "".join(page.extract_text() or "" for page in reader.pages)
+                file_context = f"Here is the content from the uploaded PDF file:\n---\n{pdf_text}\n---\n\n"
+            except Exception as e:
+                logging.error(f"Failed to read or parse PDF file {file_path}: {e}")
+                return {"status": "error", "message": f"Could not process the PDF file: {e}"}
+        else:
+            logging.warning(f"Unsupported file type provided: {file_path}. Only PDF is supported.")
+
     # Load previous session context
     history = get_session_history(user_id, session_id)
     context_text = "\n".join([f"User: {h['query']}\nAssistant: {h['response']}" for h in history])
@@ -187,6 +205,7 @@ def generate_response(user_id: str, session_id: str, query: str, model_name: str
     # Combine context + new query
     full_prompt = (
         f"System: {SYSTEM_PROMPT}\n\n"
+        f"{file_context}"
         f"Here is the conversation so far:\n{context_text}\n\n"
         f"Now the user asks: {query}"
     )
@@ -222,11 +241,11 @@ if __name__ == "__main__":
 
     # Simulate user asking questions in same session
     while True:
-        q = input("")
-        result = generate_response(user_id, session_id, q)
+        q = input("You: ")
+        if q.lower() in ["exit", "quit"]:
+            break
+        
+    
+        pdf_path_to_test =  None  #r"C:\Users\AKHILA\OneDrive\Desktop\aurora_all.pdf"          
+        result = generate_response(user_id, session_id, q, file_path=pdf_path_to_test)
         print("Assistant:", result.get("response", result.get("message")))
-
-    # for q in queries:
-    #     result = generate_response(user_id, session_id, q)
-    #     print("\nUser:", q)
-    #     print("Assistant:", result.get("response", result.get("message")))
