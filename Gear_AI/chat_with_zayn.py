@@ -176,6 +176,9 @@ def generate_response(user_id: str, session_id: str, query: str, file_path: Opti
         return {
             "status": "blocked",
             "message": "I can’t assist with unauthorized or harmful activities.",
+            "user_id": user_id,
+            "session_id": session_id,
+            "timestamp": timestamp
         }
 
     # Extract content from PDF if provided
