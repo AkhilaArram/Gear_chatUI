@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zayn Levi AI Assistant 🤖</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: #f4f5f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    /* -------- Login Page -------- */
+    #login-section {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      text-align: center;
+    }
+
+    #login-section h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    #login-section input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+
+    #login-btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #888;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    #login-btn:hover {
+      background-color: #6e6e6e;
+    }
+
+    /* -------- Chat Layout -------- */
+    #chat-layout {
+      display: none; /* 🔹 Important: hidden until login */
+      width: 90%;
+      max-width: 1000px;
+      height: 90vh;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    #chat-title {
+     font-size: 1.4em;
+     font-weight: 600;
+     color: #444;
+     margin: 0 0 10px 0;
+     text-align: left;
+   }
+
+
+    #chat-container {
+      display: flex;
+      height: 100%;
+    }
+
+    /* Left panel - Chat history */
+    #history-panel {
+      width: 30%;
+      background: #f9fafb;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    #history-panel h2 {
+      margin-top: 0;
+      color: #444;
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+
+    .history-item {
+      background: #ececec;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 8px 0;
+      cursor: pointer;
+      font-size: 0.95em;
+      color: #333;
+      transition: background 0.2s;
+    }
+
+    .history-item:hover {
+      background: #dcdcdc;
+    }
+
+    /* Right panel - Chat area */
+    #chat-area {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    #messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 6px;
+      max-width: 80%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .user {
+      background: #c5d3c0;
+      color: #222;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background: #e9ecef;
+      color: #333;
+      align-self: flex-start;
+    }
+
+    /* Input section */
+    #input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    #file-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #file-label {
+      background-color: #e9ecef;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    #file-name {
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    #remove-file {
+      background: none;
+      border: none;
+      color: #555;
+      font-size: 1em;
+      cursor: pointer;
+      display: none;
+    }
+
+    /* Input box with send button */
+    .input-container {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+    }
+
+    #query {
+      flex: 1;
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      outline: none;
+      border-radius: 6px 0 0 6px;
+    }
+
+    #send-btn {
+      background-color: #a1b5a5;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    #send-btn:hover {
+      background-color: #8da691;
+    }
+
+    #logout-btn {
+      background-color: #bbb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 0.9em;
+      align-self: flex-end;
+      margin-top: 10px;
+    }
+
+    #logout-btn:hover {
+      background-color: #999;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- LOGIN -->
+  <div id="login-section">
+    <h2>🔒 Login </h2>
+    <input type="text" id="user-id" placeholder="Enter User ID" />
+    <input type="text" id="session-id" placeholder="Enter Session ID" />
+    <button id="login-btn">Login</button>
+  </div>
+
+  <!-- CHAT INTERFACE -->
+  <div id="chat-layout">
+    <div id="chat-container">
+      <!-- History Panel -->
+      <div id="history-panel">
+        <h2>🗒️ Chat History</h2>
+        <div id="history-list"></div>
+      </div>
+
+      <!-- Chat Area -->
+      <div id="chat-area">
+        <h1 id="chat-title">ZaynLevi AI Assistant</h1>
+        <div id="messages"></div>
+
+        <div id="input-section">
+          <div id="file-section">
+            <label id="file-label" for="file">📄 Upload PDF</label>
+            <input type="file" id="file" accept=".pdf" style="display:none;" />
+            <span id="file-name"></span>
+            <button id="remove-file">x</button>
+          </div>
+
+          <div class="input-container">
+            <input type="text" id="query" placeholder="Type your question..." />
+            <button id="send-btn">Send</button>
+          </div>
+        </div>
+
+        <button id="logout-btn">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const loginBtn = document.getElementById("login-btn");
+    const chatLayout = document.getElementById("chat-layout");
+    const loginSection = document.getElementById("login-section");
+    const userIdInput = document.getElementById("user-id");
+    const sessionIdInput = document.getElementById("session-id");
+    const messagesDiv = document.getElementById("messages");
+    const sendBtn = document.getElementById("send-btn");
+    const queryInput = document.getElementById("query");
+    const fileInput = document.getElementById("file");
+    const fileNameSpan = document.getElementById("file-name");
+    const removeFileBtn = document.getElementById("remove-file");
+    const historyList = document.getElementById("history-list");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    // show only login initially
+    window.onload = () => {
+      loginSection.style.display = "block";
+      chatLayout.style.display = "none";
+    };
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.textContent = text;
+      messagesDiv.appendChild(msg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    loginBtn.addEventListener("click", () => {
+      const userId = userIdInput.value.trim();
+      const sessionId = sessionIdInput.value.trim();
+      if (!userId || !sessionId) {
+        alert("Please enter both User ID and Session ID.");
+        return;
+      }
+      loginSection.style.display = "none";
+      chatLayout.style.display = "block";
+      addMessage("Hello! How can I help you today?", "bot");
+      loadHistory(userId, sessionId);
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      chatLayout.style.display = "none";
+      loginSection.style.display = "block";
+      messagesDiv.innerHTML = "";
+      historyList.innerHTML = "";
+      fileInput.value = "";
+      fileNameSpan.textContent = "";
+      removeFileBtn.style.display = "none";
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (file) {
+        fileNameSpan.textContent = file.name;
+        removeFileBtn.style.display = "inline";
+      }
+    });
+
+    removeFileBtn.addEventListener("click", () => {
+      fileInput.value = "";
+      fileNameSpan.textContent = "";
+      removeFileBtn.style.display = "none";
+    });
+
+    sendBtn.addEventListener("click", async () => {
+      const query = queryInput.value.trim();
+      const file = fileInput.files[0];
+      const userId = userIdInput.value.trim();
+      const sessionId = sessionIdInput.value.trim();
+
+      if (!query) {
+        alert("Please type your question!");
+        return;
+      }
+
+      addMessage(query, "user");
+      queryInput.value = "";
+
+      const thinking = document.createElement("div");
+      thinking.classList.add("message", "bot");
+      thinking.textContent = "Thinking...";
+      messagesDiv.appendChild(thinking);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      const formData = new FormData();
+      formData.append("user_id", userId);
+      formData.append("session_id", sessionId);
+      formData.append("query", query);
+      if (file) formData.append("file", file);
+
+      try {
+        const res = await fetch("/chat", { method: "POST", body: formData });
+        const data = await res.json();
+        thinking.textContent = data.response || "No response received.";
+        loadHistory(userId, sessionId);
+      } catch {
+        thinking.textContent = "⚠️ Error connecting to backend.";
+      }
+    });
+
+    async function loadHistory(userId, sessionId) {
+      try {
+        const res = await fetch(`/history?user_id=${userId}&session_id=${sessionId}`);
+        const data = await res.json();
+        historyList.innerHTML = "";
+        if (data.history && data.history.length > 0) {
+          data.history.forEach((h) => {
+            const item = document.createElement("div");
+            item.classList.add("history-item");
+            item.textContent = h.query;
+            item.addEventListener("click", () => {
+              messagesDiv.innerHTML = "";
+              addMessage(`Q: ${h.query}`, "user");
+              addMessage(`A: ${h.response}`, "bot");
+            });
+            historyList.appendChild(item);
+          });
+        } else {
+          historyList.innerHTML = "<p style='color:#777;text-align:center;'>No history yet</p>";
+        }
+      } catch {
+        historyList.innerHTML = "<p style='color:#777;text-align:center;'>Could not load history</p>";
+      }
+    }
+  </script>
+</body>
+</html>
