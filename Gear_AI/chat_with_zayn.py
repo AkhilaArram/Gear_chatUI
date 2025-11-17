@@ -8,6 +8,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from pypdf import PdfReader
 
+
 # -------------------- SETUP --------------------
 load_dotenv(override=True)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -181,7 +182,10 @@ def generate_response(user_id: str, session_id: str, query: str, file_path: Opti
         logging.warning("Blocked potentially malicious query.")
         return {
             "status": "blocked",
-            "message": "I can’t assist with unauthorized or harmful activities.",
+            "user_id": user_id,
+            "session_id": session_id,
+            "timestamp": timestamp,
+            "response": "I can’t assist with unauthorized or harmful activities.",
         }
 
     # Extract content from PDF if provided
