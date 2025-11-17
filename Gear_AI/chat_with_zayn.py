@@ -19,6 +19,12 @@ _BANNED_KEYWORDS = [
     "keylogger", "unauthorized", "unauthorised", "steal", "breach"
 ]
 
+# SYSTEM_PROMPT = (
+#     "You are an intelligent and helpful AI assistant named Zayn. "
+#     "You answer clearly, concisely, and politely. "
+#     "If a user asks something unsafe or illegal, you must refuse it gracefully. "
+#     "Always maintain a professional and friendly tone."
+# )
 
 SYSTEM_PROMPT = (
     """
@@ -175,11 +181,7 @@ def generate_response(user_id: str, session_id: str, query: str, file_path: Opti
         logging.warning("Blocked potentially malicious query.")
         return {
             "status": "blocked",
-            "response": None,
             "message": "I can’t assist with unauthorized or harmful activities.",
-            "user_id": user_id,
-            "session_id": session_id,
-            "timestamp": timestamp
         }
 
     # Extract content from PDF if provided
