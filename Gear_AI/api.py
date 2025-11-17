@@ -72,19 +72,8 @@ async def handle_chat(
         )
 
         # ⭐ Fix malicious query (Return JSONResponse)
-        if isinstance(result, dict) and result.get("status") == "blocked":
-         return JSONResponse(
-        content={
-            "response": result["message"],
-            "msg": "blocked"
-        },
-        status_code=200
-    )
-        return result
-
-    except Exception as e:
-        logging.exception("Error occurred in /chat endpoint")
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.info(f"/chat result: {result}")
+        return JSONResponse(content=result)
 
 
     except Exception as e:
