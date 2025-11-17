@@ -1,7 +1,7 @@
 import os
 import shutil
 import logging
-from typing import Optional
+from typing import Optional,Union
 
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, HTMLResponse
@@ -43,11 +43,15 @@ async def handle_chat(
     user_id: str = Form(...),
     session_id: str = Form(...),
     query: str = Form(...),
-    file: Optional[UploadFile] = File(None),
+    file: Optional[Union[UploadFile, str]] = File(default=None)
 ):
+    # Fix Swagger sending `file=""`
+    if isinstance(file, str) or file in ("", None):
+        file = None
+
     file_path = None
     try:
-        # ✅ Save uploaded file temporarily
+        # ⭐ Save uploaded file (works for Render + Swagger)
         if file and file.filename:
             if not file.filename.lower().endswith(".pdf"):
                 raise HTTPException(status_code=400, detail="Only PDF files are supported")
@@ -57,9 +61,9 @@ async def handle_chat(
                 shutil.copyfileobj(file.file, buffer)
 
             file_path = os.path.abspath(temp_file_path)
-            logging.info(f"✅ Uploaded file saved: {file_path}")
+            logging.info(f"PDF saved: {file_path}")
 
-        #  Call backend logic
+        # ⭐ Call backend logic
         result = chat_with_zayn.generate_response(
             user_id=user_id,
             session_id=session_id,
@@ -67,7 +71,21 @@ async def handle_chat(
             file_path=file_path
         )
 
-        return result  
+        # ⭐ Fix malicious query (Return JSONResponse)
+        if isinstance(result, dict) and result.get("status") == "blocked":
+         return JSONResponse(
+        content={
+            "response": result["message"],
+            "msg": "blocked"
+        },
+        status_code=200
+    )
+        return result
+
+    except Exception as e:
+        logging.exception("Error occurred in /chat endpoint")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
     except Exception as e:
         logging.exception("Error occurred in /chat endpoint")
